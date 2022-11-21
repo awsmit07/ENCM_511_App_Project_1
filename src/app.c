@@ -1,5 +1,5 @@
 /*
- * File:   os.c
+ * File:   app.c
  * Author: andy
  *
  * Created on November 18, 2022, 9:39 AM
@@ -94,7 +94,7 @@ void APP_state_machine_main(void)
 */
 void app_state_enter_time_main(void)
 {
-
+    app_display_time();
 }
 
 
@@ -189,7 +189,6 @@ void app_enter_time_button_press(button_t buttons)
             {
                 countdown_s %= 60;
             }
-            LED_toggle();
             app_display_time();
             break;
         }
@@ -203,7 +202,10 @@ void app_enter_time_button_press(button_t buttons)
         // Short button 3 start countdown
         case BUTTON3:
         {
-            app_state_countdown_init();
+            if(countdown_s != 0)
+            {
+                app_state_countdown_init();
+            }
             break;
         }
         // Long button reset countdown
