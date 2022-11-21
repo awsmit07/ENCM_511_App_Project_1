@@ -94,6 +94,32 @@ void APP_state_machine_main(void)
 */
 void app_state_enter_time_main(void)
 {
+    // If the timer has gone off increment the countdown
+    if(interrupt_state.timer3_trig)
+    {
+        interrupt_state.timer3_trig = 0;
+        switch (Io_get_buttons())
+        {
+            // Button 1 increment minutes
+            case BUTTON1:
+            {
+                countdown_s += 60;
+                // If the countdown timer goes above 59 minutes reset
+                // minutes to 0.
+                if ((countdown_s / 60) > 59)
+                {
+                    countdown_s %= 60;
+                }
+                break;
+            }
+            // Button 2 increment seconds
+            case BUTTON2:
+            {
+                countdown_s ++;
+                break;
+            }
+        }
+    }
     app_display_time();
 }
 
@@ -177,6 +203,7 @@ void app_state_timer_finish_init(void)
  */
 void app_enter_time_button_press(button_t buttons)
 {
+    debug_print("Enter Time Button");
     switch (buttons)
     {
         // Button 1 increment minutes

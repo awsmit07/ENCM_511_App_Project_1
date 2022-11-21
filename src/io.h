@@ -34,6 +34,8 @@ void IO_handle_button_event();
 
 void IO_set_button_callback();
 
+button_t Io_get_buttons();
+
 void LED_toggle();
 
 void LED_on();

@@ -11,7 +11,6 @@
 #include "timer.h"
 #include "UART2.h"
 
-button_t io_get_buttons();
 
 typedef void (*button_callback_t)(button_t);
 static button_callback_t button_callback = NULL;
@@ -94,7 +93,7 @@ void IO_init()
  *
  * @return buttons the button being pressed.
  */
-button_t io_get_buttons()
+button_t Io_get_buttons()
 {
     // Bit field for button state
     union Button_state
@@ -109,7 +108,7 @@ button_t io_get_buttons()
     } buttons = {0};
     #ifdef ANDY_HARDWARE
     // Using positive logic buttons read directly.
-    buttons.state = PORTA;
+    buttons.state = PORTA & 0x7;
     #else
     buttons.s0 = !PORTAbits.RA2;
     buttons.s1 = !PORTBbits.RB4;
@@ -146,7 +145,7 @@ void IO_set_button_callback(button_callback_t callback)
 void IO_handle_button_event()
 {
     // Current and previous state of the buttons.
-    button_t cur_buttons = io_get_buttons();
+    button_t cur_buttons = Io_get_buttons();
     static button_t pre_buttons = NO_BUTTONS;
 
     debug_print("Button Handler");
@@ -157,6 +156,7 @@ void IO_handle_button_event()
         // Handle button events on release of button
         case NO_BUTTONS:
         {
+            timer_stop(TIMER3);
             // Check if button timer finished and if true switch button
             // to long press
             if(!timer_flags.timer2_flag)
@@ -188,12 +188,18 @@ void IO_handle_button_event()
                 timer_stop(TIMER2);
             }
             // Callback to button handler
+            debug_print("Callback");
             (*button_callback)(pre_buttons);
         }
         // If a button has been pressed down start the timer for 3s to
         // check for long presses.
         case BUTTON1:
         case BUTTON2:
+        {
+            // For buttons 1 and 2 detect if the button has been held
+            // down and trigger a timer every 500ms in that case
+            timer_start(TIMER3, 500);
+        }
         case BUTTON3:
         {
             timer_start(TIMER2, 3000);
